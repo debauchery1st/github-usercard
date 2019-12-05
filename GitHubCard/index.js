@@ -3,6 +3,33 @@
            https://api.github.com/users/<your name>
 */
 
+const cards = document.getElementsByClassName("cards").item(0);
+const populateCards = (resp) => cards.appendChild(createHTMLCard(JSON.parse(resp)));
+
+function axios(url, foo) {
+  const theStateOf = {
+    "UNSENT": 0,
+    "OPENED": 1,
+    "HEADERS_RECEIVED": 2,
+    "LOADING": 3,
+    "DONE": 4
+  };
+  const xhr = new XMLHttpRequest();
+  const processRequest = (e) => {
+    if (xhr.readyState === theStateOf["DONE"] && xhr.status == 200) {
+      console.log("OK");
+      foo(xhr.response);
+    }
+  }
+  // xhr.open(HTTP_METHOD, URL, ASYNC?)
+  xhr.open('GET', url, true);
+  xhr.addEventListener("readystatechange", processRequest, false);
+  xhr.send();
+}
+
+axios("https://api.github.com/users/debauchery1st", populateCards);
+
+
 /* Step 2: Inspect and study the data coming back, this is YOUR 
    github info! You will need to understand the structure of this 
    data in order to use it to build your component function 
@@ -26,6 +53,17 @@
 
 const followersArray = [];
 
+const populateFollowers = (resp) => {
+  var peeps = JSON.parse(resp);
+  peeps.forEach((peep, num) => followersArray.push(peep));
+  followersArray.forEach((peep) => cards.appendChild(createHTMLCard(peep)));
+}
+
+axios("https://api.github.com/users/debauchery1st/followers", populateFollowers);
+
+// createHTMLCard(JSON.parse(resp))
+// "https://api.github.com/users/<Your github name>/followers"
+
 /* Step 3: Create a function that accepts a single object as its only argument,
           Using DOM methods and properties, create a component that will return the following DOM element:
 
@@ -45,6 +83,49 @@ const followersArray = [];
 </div>
 
 */
+
+function createHTMLCard(ghCard) {
+  // create
+  const gitCard = document.createElement("div");
+  const gitImg = document.createElement("img");
+  const gitCardInfo = document.createElement("div");
+  const gitName = document.createElement("h3");
+  const gitUserName = document.createElement("p");
+  const gitLocation = document.createElement("p");
+  const gitProfile = document.createElement("p");
+  const gitProfileURL = document.createElement("a");
+  const gitFollowers = document.createElement("p");
+  const gitFollowing = document.createElement("p");
+  const gitBio = document.createElement("p");
+  // assign
+  gitCard.classList.add("card");
+  gitImg.src = ghCard.avatar_url;
+  gitCardInfo.classList.add("card-info");
+  gitName.classList.add("name");
+  gitName.textContent = (ghCard.name === "debauchery1st") ? "Trevor Martin":ghCard.name;
+  gitUserName.classList.add("username");
+  gitUserName.textContent = ghCard.login;
+  gitLocation.textContent = `Location: ${(ghCard.location == null) ? "Lambda School":ghCard.location}`;
+  gitProfileURL.href = ghCard.html_url;
+  gitProfileURL.textContent = "visit my profile";
+  gitProfile.textContent = "Profile: ";
+  gitProfile.appendChild(gitProfileURL);
+  gitFollowers.textContent = `Followers: ${ghCard.followers}`;
+  gitFollowing.textContent = `Following: ${ghCard.following}`;
+  gitBio.textContent = (ghCard.bio == null) ? "":ghCard.bio;
+  // assemble
+  gitProfile.appendChild(gitProfileURL);
+  gitCardInfo.appendChild(gitName);
+  gitCardInfo.appendChild(gitUserName);
+  gitCardInfo.appendChild(gitLocation);
+  gitCardInfo.appendChild(gitProfile);
+  gitCardInfo.appendChild(gitFollowers);
+  gitCardInfo.appendChild(gitFollowing);
+  gitCardInfo.appendChild(gitBio);
+  gitCard.appendChild(gitImg);
+  gitCard.appendChild(gitCardInfo);
+  return gitCard;
+}
 
 /* List of LS Instructors Github username's: 
   tetondan
