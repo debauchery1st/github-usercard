@@ -99,7 +99,7 @@ function createHTMLCard(ghCard) {
   gitImg.src = ghCard.avatar_url;
   gitCardInfo.classList.add("card-info");
   gitName.classList.add("name");
-  gitName.textContent = (ghCard.name === "debauchery1st") ? "Trevor Martin":ghCard.name;
+  gitName.textContent = ghCard.name;
   gitUserName.classList.add("username");
   gitUserName.textContent = ghCard.login;
   gitLocation.textContent = `Location: ${(ghCard.location == null) ? "Lambda School":ghCard.location}`;
