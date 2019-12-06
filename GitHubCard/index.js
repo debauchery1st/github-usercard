@@ -62,7 +62,12 @@ function createHTMLCard(ghCard) {
   const gitFollowers = document.createElement("p");
   const gitFollowing = document.createElement("p");
   const gitBio = document.createElement("p");
+  const gitHacker = document.createElement('a')
   // assign
+  gitHacker.href = `javascript:loadHacker('https://api.github.com/users/${ghCard.login}')`;
+  gitHacker.textContent = "💾";
+  gitHacker.display = "flex";
+  gitHacker.classList.add('load-hacker');
   gitCard.classList.add("card");
   gitImg.src = ghCard.avatar_url;
   gitCardInfo.classList.add("card-info");
@@ -81,6 +86,7 @@ function createHTMLCard(ghCard) {
   gitBio.textContent = (ghCard.bio == null) ? "Bio: hacker":`Bio: ${ghCard.bio}`;
   // assemble
   gitProfile.appendChild(gitProfileURL);
+  gitName.appendChild(gitHacker);
   gitCardInfo.appendChild(gitName);
   gitCardInfo.appendChild(gitUserName);
   gitCardInfo.appendChild(gitLocation);
@@ -132,4 +138,15 @@ function populateCards(url=baseURL, follow=true, create=true) {
     });
 }
 
-hackersPromise = populateCards();
+function loadHacker(hackerURL) {
+  while (followersArray.length > 0) {
+    followersArray.pop();
+  }
+  return new Promise(()=>{
+    cards.innerHTML = "";
+    cards.textContent = "";
+    console.log(cards);
+  }).then(populateCards(hackerURL));
+}
+
+var hackersPromise = populateCards().catch((e) => console.log(`failed to resolve promise; ${e}`));
