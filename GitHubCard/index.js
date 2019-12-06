@@ -6,30 +6,6 @@
 const cards = document.getElementsByClassName("cards").item(0);
 const baseURL = "https://api.github.com/users/debauchery1st";
 
-// const populateCards = (resp) => cards.appendChild(createHTMLCard(JSON.parse(resp)));
-// function notAxios(url, foo) {
-//   const theStateOf = {
-//     "UNSENT": 0,
-//     "OPENED": 1,
-//     "HEADERS_RECEIVED": 2,
-//     "LOADING": 3,
-//     "DONE": 4
-//   };
-//   const xhr = new XMLHttpRequest();
-//   const processRequest = (e) => {
-//     if (xhr.readyState === theStateOf["DONE"] && xhr.status == 200) {
-//       console.log("OK");
-//       foo(xhr.response);
-//     }
-//   }
-//   // xhr.open(HTTP_METHOD, URL, ASYNC?)
-//   xhr.open('GET', url, true);
-//   xhr.addEventListener("readystatechange", processRequest, false);
-//   xhr.send();
-// }
-// notAxios("https://api.github.com/users/debauchery1st", populateCards);
-
-
 /* Step 2: Inspect and study the data coming back, this is YOUR 
    github info! You will need to understand the structure of this 
    data in order to use it to build your component function 
@@ -52,14 +28,6 @@ const baseURL = "https://api.github.com/users/debauchery1st";
 */
 
 const followersArray = [];
-
-// const populateFollowers = (resp) => {
-//   var peeps = JSON.parse(resp);
-//   peeps.forEach((peep, num) => followersArray.push(peep));
-//   followersArray.forEach((peep) => cards.appendChild(createHTMLCard(peep)));
-// }
-// notAxios("https://api.github.com/users/debauchery1st/followers", populateFollowers);
-
 
 /* Step 3: Create a function that accepts a single object as its only argument,
           Using DOM methods and properties, create a component that will return the following DOM element:
@@ -104,12 +72,13 @@ function createHTMLCard(ghCard) {
   gitUserName.textContent = ghCard.login;
   gitLocation.textContent = `Location: ${(ghCard.location == null) ? "Lambda School":ghCard.location}`;
   gitProfileURL.href = ghCard.html_url;
+  gitProfileURL.target = "_blank";
   gitProfileURL.textContent = "visit my profile";
   gitProfile.textContent = "Profile: ";
   gitProfile.appendChild(gitProfileURL);
-  gitFollowers.textContent = `Followers: ${ghCard.followers}`;
-  gitFollowing.textContent = `Following: ${ghCard.following}`;
-  gitBio.textContent = (ghCard.bio == null) ? "":ghCard.bio;
+  gitFollowers.textContent = (ghCard.followers != null) ? `Followers: ${(ghCard.followers)}`:"";
+  gitFollowing.textContent = (ghCard.followers != null) ? `Following: ${(ghCard.following)}`:"";
+  gitBio.textContent = (ghCard.bio == null) ? "Bio: hacker":`Bio: ${ghCard.bio}`;
   // assemble
   gitProfile.appendChild(gitProfileURL);
   gitCardInfo.appendChild(gitName);
@@ -132,11 +101,35 @@ function createHTMLCard(ghCard) {
   bigknell
 */
 
-const populateCards = (resp) => cards.appendChild(createHTMLCard(resp.data));
-// const populateFollowers = (resp) => resp.forEach(peep => cards.appendChild(createHTMLCard(peep)));
-const populateFollowers = (peeps) => {
-  peeps.forEach((peep) => followersArray.push(peep));
-  followersArray.forEach((peep) => cards.appendChild(createHTMLCard(peep)));
+function populateCards(url=baseURL, follow=true, create=true) {
+  if (url.length === 0) {
+    console.log("url?")
+    return true;
+  }
+  return new axios.get(url)
+    .then(a => {
+      if (create) {
+        cards.appendChild(createHTMLCard(a.data));
+      }
+      return a;
+    }).then(b => {
+      if (follow) {
+        populateCards(b.data.followers_url, false, false);
+      }
+      return b;
+    }).then(c => {
+      if (!create && c.data.length > 0) {
+        c.data.forEach((hck) => followersArray.push(hck.login));
+      }
+      return c;
+    }).then((result) => {
+      if (result.data.length > 0) {
+        followersArray.forEach((hacker)=>{
+          populateCards(`https://api.github.com/users/${hacker}`, false, true);
+        })
+      }
+      return result;
+    });
 }
 
-axios.get(baseURL).then(response => cards.appendChild(createHTMLCard(response.data))).then(axios.get(`${baseURL}/followers`).then(response => populateFollowers(response.data)));
+hackersPromise = populateCards();
