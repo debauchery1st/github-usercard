@@ -4,30 +4,30 @@
 */
 
 const cards = document.getElementsByClassName("cards").item(0);
-const populateCards = (resp) => cards.appendChild(createHTMLCard(JSON.parse(resp)));
+const baseURL = "https://api.github.com/users/debauchery1st";
 
-function axios(url, foo) {
-  const theStateOf = {
-    "UNSENT": 0,
-    "OPENED": 1,
-    "HEADERS_RECEIVED": 2,
-    "LOADING": 3,
-    "DONE": 4
-  };
-  const xhr = new XMLHttpRequest();
-  const processRequest = (e) => {
-    if (xhr.readyState === theStateOf["DONE"] && xhr.status == 200) {
-      console.log("OK");
-      foo(xhr.response);
-    }
-  }
-  // xhr.open(HTTP_METHOD, URL, ASYNC?)
-  xhr.open('GET', url, true);
-  xhr.addEventListener("readystatechange", processRequest, false);
-  xhr.send();
-}
-
-axios("https://api.github.com/users/debauchery1st", populateCards);
+// const populateCards = (resp) => cards.appendChild(createHTMLCard(JSON.parse(resp)));
+// function notAxios(url, foo) {
+//   const theStateOf = {
+//     "UNSENT": 0,
+//     "OPENED": 1,
+//     "HEADERS_RECEIVED": 2,
+//     "LOADING": 3,
+//     "DONE": 4
+//   };
+//   const xhr = new XMLHttpRequest();
+//   const processRequest = (e) => {
+//     if (xhr.readyState === theStateOf["DONE"] && xhr.status == 200) {
+//       console.log("OK");
+//       foo(xhr.response);
+//     }
+//   }
+//   // xhr.open(HTTP_METHOD, URL, ASYNC?)
+//   xhr.open('GET', url, true);
+//   xhr.addEventListener("readystatechange", processRequest, false);
+//   xhr.send();
+// }
+// notAxios("https://api.github.com/users/debauchery1st", populateCards);
 
 
 /* Step 2: Inspect and study the data coming back, this is YOUR 
@@ -53,16 +53,13 @@ axios("https://api.github.com/users/debauchery1st", populateCards);
 
 const followersArray = [];
 
-const populateFollowers = (resp) => {
-  var peeps = JSON.parse(resp);
-  peeps.forEach((peep, num) => followersArray.push(peep));
-  followersArray.forEach((peep) => cards.appendChild(createHTMLCard(peep)));
-}
+// const populateFollowers = (resp) => {
+//   var peeps = JSON.parse(resp);
+//   peeps.forEach((peep, num) => followersArray.push(peep));
+//   followersArray.forEach((peep) => cards.appendChild(createHTMLCard(peep)));
+// }
+// notAxios("https://api.github.com/users/debauchery1st/followers", populateFollowers);
 
-axios("https://api.github.com/users/debauchery1st/followers", populateFollowers);
-
-// createHTMLCard(JSON.parse(resp))
-// "https://api.github.com/users/<Your github name>/followers"
 
 /* Step 3: Create a function that accepts a single object as its only argument,
           Using DOM methods and properties, create a component that will return the following DOM element:
@@ -134,3 +131,12 @@ function createHTMLCard(ghCard) {
   luishrd
   bigknell
 */
+
+const populateCards = (resp) => cards.appendChild(createHTMLCard(resp.data));
+// const populateFollowers = (resp) => resp.forEach(peep => cards.appendChild(createHTMLCard(peep)));
+const populateFollowers = (peeps) => {
+  peeps.forEach((peep) => followersArray.push(peep));
+  followersArray.forEach((peep) => cards.appendChild(createHTMLCard(peep)));
+}
+
+axios.get(baseURL).then(response => cards.appendChild(createHTMLCard(response.data))).then(axios.get(`${baseURL}/followers`).then(response => populateFollowers(response.data)));
